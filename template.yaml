@@ -51,7 +51,7 @@ Resources:
       BuildMethod: nodejs16.x
     Properties:
       FunctionName: notifyadminsfunction
-      Handler: dist/submitfeed/app.lambdaHandler
+      Handler: dist/notifyadmins/app.lambdaHandler
       Runtime: nodejs16.x
       Architectures:
         - x86_64
@@ -68,6 +68,26 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedbackTable
+        - DynamoDBStreamReadPolicy:
+            StreamName: "*"
+            TableName: !Ref FeedbackTable
+
+  FeedbackNotifications:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: FeedbackNotificationsTopic
+
+  FeedbackQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: FeedbackQueue
+
+  SNSToSQSSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: sqs
+      TopicArn: !Ref FeedbackNotifications
+      Endpoint: !GetAtt FeedbackQueue.Arn
 
   FeedbackTable:
     Type: AWS::DynamoDB::Table

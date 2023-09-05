@@ -1,13 +1,21 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { handleSubmit } from ".";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  DynamoDBStreamEvent,
+} from "aws-lambda";
+import { handleSNS } from ".";
 import { shapeErrorResponse, shapeResponse } from "../utils/reponse";
 
 export const lambdaHandler = async (
-  event: APIGatewayProxyEvent
+  event: DynamoDBStreamEvent
 ): Promise<APIGatewayProxyResult> => {
-  console.log({ event: event.body });
+  console.log({
+    newItem: event.Records[0].dynamodb?.NewImage,
+    records: event.Records,
+  });
 
-  const result = await handleSubmit(JSON.parse(event.body!));
+  const result = await handleSNS(event.Records[0].dynamodb?.NewImage);
+
   try {
     return shapeResponse(200, { data: result });
   } catch (err) {
