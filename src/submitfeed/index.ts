@@ -37,7 +37,7 @@ export const handleSubmit = async (body: SubmittedByUser) => {
 
   await submit(feedbackToSubmit, tableName, "id");
 
-  return "Feedback successfully submitted";
+  return `Feedback with id ${feedbackToSubmit.id} successfully submitted`;
 };
 
 function generateFeedbackObject(body: SubmittedByUser): Feedback {

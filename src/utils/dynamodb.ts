@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import { genericJSON } from "../types";
 
+// AWS.config.update({ region: "eu-west-3" });
 export const submit = async (
   Item: genericJSON,
   TableName: string,
