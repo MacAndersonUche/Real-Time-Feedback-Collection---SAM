@@ -2,9 +2,7 @@
   "name": "real_time_feedback_collection",
   "version": "1.0.0",
   "description": "Real Time Feedback Collection using SAM",
-  "main": "app.js",
-  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
-  "author": "SAM CLI",
+  "author": "MAC",
   "license": "MIT",
   "scripts": {
     "unit": "jest",
@@ -16,7 +14,8 @@
     "start-sam": "sam local start-api -n local.json -p 3003  --log-file log.txt",
     "start-ts": "node node_modules/typescript/bin/tsc -w --preserveWatchOutput",
     "start": "npm-run-all --parallel start-clear start-ts start-sam",
-    "build": "node node_modules/typescript/bin/tsc",
+    "build": "npm run compile && sam build && sam deploy",
+    "clearAll": "npm run clear && npm run start-clear",
     "run": "node dist/index.js",
     "clear": "rm -r dist",
     "preparepush": "npm run clear && npm run prettify"

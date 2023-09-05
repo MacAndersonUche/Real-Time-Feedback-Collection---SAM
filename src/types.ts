@@ -3,9 +3,13 @@ export interface Feedback {
   author: string;
   email: string;
   feedbacktext: string;
-  status: string;
+  status: Status;
 }
 
+export enum Status {
+  Submited = "Submited",
+  Actioned = "Actioned",
+}
 export type SubmittedByUser = Omit<Feedback, "id" | "status">;
 
 export interface genericJSON {

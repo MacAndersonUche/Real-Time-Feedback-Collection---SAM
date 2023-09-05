@@ -1,11 +1,9 @@
 import { validateJson } from "../utils/ajv";
-import { Feedback, SubmittedByUser } from "../types";
+import { Feedback, Status, SubmittedByUser } from "../types";
 import { v4 } from "uuid";
 import { submit } from "../utils/dynamodb";
 
 export const handleSubmit = async (body: SubmittedByUser) => {
-  console.log("INSIDE SUBMIT");
-
   const feedbackSchema = {
     type: "object",
     properties: {
@@ -24,7 +22,9 @@ export const handleSubmit = async (body: SubmittedByUser) => {
 
   const errors = validateJson(feedbackSchema, body);
 
-  const tableName = process.env.TABLE_NAME;
+  const tableName = process.env.TABLE_NAME || "submit-feedback";
+
+  console.log({ tableName });
 
   if (errors) throw Error("Invalid Format");
 
@@ -35,7 +35,7 @@ export const handleSubmit = async (body: SubmittedByUser) => {
 
   const feedbackToSubmit = generateFeedbackObject(body);
 
-  await submit(feedbackSchema, "", "id");
+  await submit(feedbackToSubmit, tableName, "id");
 
   return "Feedback successfully submitted";
 };
@@ -46,7 +46,7 @@ function generateFeedbackObject(body: SubmittedByUser): Feedback {
 
   return {
     id,
-    status: "Submitted",
+    status: Status.Submited,
     feedbacktext,
     author,
     email,
