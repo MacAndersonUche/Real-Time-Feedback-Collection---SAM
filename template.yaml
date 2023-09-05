@@ -45,6 +45,30 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedbackTable
 
+  NotifyAdminsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: nodejs16.x
+    Properties:
+      FunctionName: notifyadminsfunction
+      Handler: dist/submitfeed/app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt FeedbackTable.StreamArn
+            BatchSize: 1
+            StartingPosition: LATEST
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref FeedbackTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FeedbackTable
+
   FeedbackTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -59,6 +83,8 @@ Resources:
       DeletionProtectionEnabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
