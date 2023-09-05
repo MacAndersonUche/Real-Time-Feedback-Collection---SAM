@@ -1,0 +1,5 @@
+{
+    "SubmitFeedbackFunction": {
+        "USERS_PERMISSIONS_TABLE_NAME": "users-permissions-dev"
+    }
+}
