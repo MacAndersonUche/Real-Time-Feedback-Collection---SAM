@@ -24,6 +24,7 @@ Resources:
   SubmitFeedbackFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+    FunctionName: submitfeedbackfunction
       CodeUri: feedback/
       Handler: src/submitfeedback/app.lambdaHandler
       Runtime: nodejs18.x
