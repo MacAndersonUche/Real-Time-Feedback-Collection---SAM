@@ -26,7 +26,7 @@ Resources:
     Properties:
       FunctionName: submitfeedbackfunction
       CodeUri: feedback/
-      Handler: src/submitfeedback/app.lambdaHandler
+      Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -43,14 +43,6 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedbackTable
-    Metadata: # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
 
   FeedbackTable:
     Type: AWS::DynamoDB::Table
