@@ -121,6 +121,15 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: FeedbackQueue
+      MessageRetentionPeriod: 120
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt FeedbackDLQQueue.Arn
+        maxReceiveCount: 2
+
+  FeedbackDLQQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: FeedbackQueueDLQ
 
   SNSToSQSSubscription:
     Type: AWS::SNS::Subscription

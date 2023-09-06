@@ -1,7 +1,7 @@
 import AWS from "aws-sdk";
 import { genericJSON } from "../types";
 
-// AWS.config.update({ region: "eu-west-3" });
+AWS.config.update({ region: "eu-west-3" });
 export const submit = async (
   Item: genericJSON,
   TableName: string,
@@ -37,7 +37,10 @@ export const update = async (
     Key: {
       id: _primaryKey,
     },
-    UpdateExpression: "set status = :r",
+    UpdateExpression: "set #s = :r", // Use #s as a placeholder for 'status'
+    ExpressionAttributeNames: {
+      "#s": "status", // Map #s to 'status' attribute
+    },
     ExpressionAttributeValues: {
       ":r": newStatus,
     },

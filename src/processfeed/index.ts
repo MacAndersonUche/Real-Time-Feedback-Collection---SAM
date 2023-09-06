@@ -16,7 +16,7 @@ export const handleSQS = async (body: any) => {
     html
   );
 
-  await update(Status.Actioned, tableName, "id");
+  await update(Status.Actioned, tableName, details.id);
 
   return "Updated, Email sent successfully";
 };
