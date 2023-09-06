@@ -1,5 +1,10 @@
 import { Feedback } from "../types";
-const AWS = require("aws-sdk");
+import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
+
+// The AWS Region can be provided here using the `region` property. If you leave it blank
+// the SDK will default to the region set in your AWS config.
+export const snsClient = new SNSClient({});
+
 export const handleSNS = async (body: any) => {
   //extract email address from object and publish to SNS with a message
   // the sns message should be a text saying they have recieved it.
@@ -36,7 +41,6 @@ function parseBody(body: any) {
   //  };
   const bodyToReturn: Record<string, string> = {};
   for (const [key, value] of Object.entries(body)) {
-    console.log(`${key}: ${value}`);
     if (value) {
       let choiceItem = value as Val;
       bodyToReturn[key] = choiceItem["S"];
@@ -58,16 +62,7 @@ async function publishToSNS(body: Feedback) {
   };
 
   // Create promise and SNS service object
-  const publishTextPromise = new AWS.SNS({ apiVersion: "2010-03-31" })
-    .publish(params)
-    .promise();
+  const response = await snsClient.send(new PublishCommand(params));
 
-  publishTextPromise
-    .then(function (data: { MessageId: string }) {
-      console.log(`Message sent to the topic ${params.TopicArn}`);
-      console.log("MessageID is " + data.MessageId);
-    })
-    .catch(function (err: { stack: any }) {
-      console.error(err, err.stack);
-    });
+  console.log({ response });
 }

@@ -21,6 +21,7 @@
     "preparepush": "npm run clear && npm run prettify"
   },
   "dependencies": {
+    "@aws-sdk/client-sns": "^3.405.0",
     "ajv": "^8.12.0",
     "aws-sdk": "^2.1451.0",
     "esbuild": "^0.14.14",

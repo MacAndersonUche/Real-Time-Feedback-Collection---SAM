@@ -73,7 +73,7 @@ Resources:
             StreamName: "*"
             TableName: !Ref FeedbackTable
         - SNSPublishMessagePolicy:
-            TopicName: !Ref FeedbackNotifications
+            TopicName: "real-time-feedback-collection-FeedbackNotifications-6fMF8vFhWqG5"
 
   ProcessFeedbackFunction:
     Type: AWS::Serverless::Function
@@ -107,11 +107,26 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       DisplayName: FeedbackNotificationsTopic
+      # TopicName: FeedbackNotificationsTopicName
 
   FeedbackQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: FeedbackQueue
+    # Metadata:
+    #   AWS::CloudFormation::CustomResource:
+    #     PolicyName: SNSPublishPolicy
+    #     PolicyDocument:
+    #       Version: "2012-10-17"
+    #       Statement:
+    #         - Effect: Allow
+    #           Principal:
+    #             Service: sns.amazonaws.com
+    #           Action: sqs:SendMessage
+    #           Resource: !GetAtt FeedbackQueue.Arn
+    #           Condition:
+    #             ArnEquals:
+    #               aws:SourceArn: !Ref FeedbackNotifications
 
   SNSToSQSSubscription:
     Type: AWS::SNS::Subscription
