@@ -48,12 +48,9 @@ function parseBody(body: any) {
 
 async function publishToSNS(body: Feedback) {
   const TOPIC_ARN = process.env.TOPIC_ARN!;
-
-  console.log({ TOPIC_ARN });
-
   // Create publish parameters
   var params = {
-    Message: JSON.stringify(body) /* required */,
+    Message: body /* required */,
     TopicArn: TOPIC_ARN,
   };
 

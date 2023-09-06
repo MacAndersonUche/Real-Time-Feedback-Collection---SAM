@@ -65,12 +65,43 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref FeedbackTable
+          TOPIC_ARN: !Ref FeedbackNotifications
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedbackTable
         - DynamoDBStreamReadPolicy:
             StreamName: "*"
             TableName: !Ref FeedbackTable
+        - SNSPublishMessagePolicy:
+            TopicName: !Ref FeedbackNotifications
+
+  ProcessFeedbackFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: nodejs16.x
+    Properties:
+      FunctionName: processfeedbackfunction
+      Handler: dist/processfeed/app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Events:
+        PollMessage:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt FeedbackQueue.Arn
+            BatchSize: 1
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref FeedbackTable
+          TOPIC_ARN: !Ref FeedbackNotifications
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FeedbackTable
+        - SQSPollerPolicy:
+            QueueName: !Ref FeedbackQueue
+        - SESCrudPolicy:
+            IdentityName: "*"
 
   FeedbackNotifications:
     Type: AWS::SNS::Topic
@@ -88,6 +119,13 @@ Resources:
       Protocol: sqs
       TopicArn: !Ref FeedbackNotifications
       Endpoint: !GetAtt FeedbackQueue.Arn
+
+  FeedbackAdminEmailNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      TopicArn: !Ref FeedbackNotifications
+      Endpoint: hi@macandersonuche.dev
 
   FeedbackTable:
     Type: AWS::DynamoDB::Table
