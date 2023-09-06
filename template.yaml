@@ -10,6 +10,9 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 128
+    Tracing: Active
+  Api:
+    TracingEnabled: true
 
 Resources:
   FeedbackApi:
@@ -113,20 +116,6 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: FeedbackQueue
-    # Metadata:
-    #   AWS::CloudFormation::CustomResource:
-    #     PolicyName: SNSPublishPolicy
-    #     PolicyDocument:
-    #       Version: "2012-10-17"
-    #       Statement:
-    #         - Effect: Allow
-    #           Principal:
-    #             Service: sns.amazonaws.com
-    #           Action: sqs:SendMessage
-    #           Resource: !GetAtt FeedbackQueue.Arn
-    #           Condition:
-    #             ArnEquals:
-    #               aws:SourceArn: !Ref FeedbackNotifications
 
   SNSToSQSSubscription:
     Type: AWS::SNS::Subscription
@@ -141,6 +130,22 @@ Resources:
       Protocol: email
       TopicArn: !Ref FeedbackNotifications
       Endpoint: hi@macandersonuche.dev
+
+  SNSToSQSPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - "sqs:SendMessage"
+              - "sqs:SendMessageBatch"
+            Resource: !GetAtt FeedbackQueue.Arn
+      Queues:
+        - !Ref FeedbackQueue
 
   FeedbackTable:
     Type: AWS::DynamoDB::Table
@@ -158,6 +163,20 @@ Resources:
         PointInTimeRecoveryEnabled: true
       StreamSpecification:
         StreamViewType: NEW_IMAGE
+
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name:
+        Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName:
+        Ref: ApplicationResourceGroup
+      AutoConfigurationEnabled: "true"
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM

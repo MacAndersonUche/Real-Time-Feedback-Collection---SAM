@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="Page-1" id="12k8LJTqPWz9uWwirLdU">
-        <mxGraphModel dx="484" dy="273" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="0" dy="351" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -120,7 +120,7 @@
                 <mxCell id="15" value="" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.mail;" vertex="1" parent="1">
                     <mxGeometry x="720" y="530" width="30" height="16.5" as="geometry"/>
                 </mxCell>
-                <mxCell id="19" value="&lt;b&gt;SendEmail to the users&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;border=none;strokeColor=#FFFFFF;" vertex="1" parent="1">
+                <mxCell id="19" value="&lt;b&gt;SendEmail to the users&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;border=none;strokeColor=none;" vertex="1" parent="1">
                     <mxGeometry x="677.75" y="565" width="114.5" height="35" as="geometry"/>
                 </mxCell>
             </root>
