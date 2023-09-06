@@ -1,12 +1,24 @@
 import { readFileSync } from "fs";
+import { update } from "../utils/dynamodb";
+import { Status } from "../types";
 const AWS = require("aws-sdk");
 export const handleSQS = async (body: any) => {
+  const tableName = process.env.TABLE_NAME || "submit-feedback";
   console.log({ body, message: body.message });
 
-  const details = extractEmailAndName(body.message);
+  const details = extractEmailAndName(JSON.parse(body.Message));
   const html = getTemplate();
 
-  await sendEmail(details.email, "", "THANKS FOR SIGNING UP", html);
+  await sendEmail(
+    details.email,
+    "macandy99@gmail.com",
+    "THANKS FOR SIGNING UP",
+    html
+  );
+
+  await update(Status.Actioned, tableName, "id");
+
+  return "Updated, Email sent successfully";
 };
 
 interface Extracted {
@@ -25,8 +37,6 @@ function extractEmailAndName({ id, email, name }: Extracted) {
 function getTemplate(): string {
   return readFileSync("src/processfeed/welcome.html", "utf-8");
 }
-
-async function updateDynamoDBStatus(id: string) {}
 
 async function sendEmail(
   toAddress: string,

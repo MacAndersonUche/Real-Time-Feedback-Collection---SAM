@@ -23,3 +23,30 @@ export const submit = async (
     .promise();
   return requestObject;
 };
+export const update = async (
+  newStatus: string,
+  TableName: string,
+  _primaryKey: string
+) => {
+  const ddb = new AWS.DynamoDB.DocumentClient({
+    params: { TableName },
+  });
+
+  const requestObject = {
+    TableName,
+    Key: {
+      id: _primaryKey,
+    },
+    UpdateExpression: "set status = :r",
+    ExpressionAttributeValues: {
+      ":r": newStatus,
+    },
+  };
+
+  await ddb
+    .update(requestObject, function (err, data) {
+      if (err) console.error(err, err.stack);
+    })
+    .promise();
+  return requestObject;
+};

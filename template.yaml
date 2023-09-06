@@ -78,6 +78,11 @@ Resources:
         - SNSPublishMessagePolicy:
             TopicName: "real-time-feedback-collection-FeedbackNotifications-6fMF8vFhWqG5"
 
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: macandy99@gmail.com
+
   ProcessFeedbackFunction:
     Type: AWS::Serverless::Function
     Metadata:
