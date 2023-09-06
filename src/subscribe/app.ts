@@ -1,15 +1,13 @@
-import { APIGatewayProxyResult, SQSEvent } from "aws-lambda";
-import { handleSQS } from ".";
+import { APIGatewayProxyResult } from "aws-lambda";
+
 import { shapeErrorResponse, shapeResponse } from "../utils/reponse";
 
 export const lambdaHandler = async (
-  event: SQSEvent
+  event: any
 ): Promise<APIGatewayProxyResult> => {
-  const body = JSON.parse(event.Records[0].body);
-  const result = await handleSQS(body);
-
+  console.log(JSON.stringify(event, null, 2));
   try {
-    return shapeResponse(200, { data: result });
+    return shapeResponse(200, { data: "Caught" });
   } catch (err) {
     console.log(err);
     return shapeErrorResponse(400, { error: err });

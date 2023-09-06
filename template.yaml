@@ -102,10 +102,13 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref FeedbackTable
+          EVENTS_TABLE_NAME: !Ref FeedbackEventsTable
           TOPIC_ARN: !Ref FeedbackNotifications
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedbackTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FeedbackEventsTable
         - SQSPollerPolicy:
             QueueName: !Ref FeedbackQueue
         - SESCrudPolicy:
@@ -115,16 +118,16 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       DisplayName: FeedbackNotificationsTopic
-      # TopicName: FeedbackNotificationsTopicName
 
   FeedbackQueue:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: FeedbackQueue
-      MessageRetentionPeriod: 120
+      MessageRetentionPeriod: 70
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt FeedbackDLQQueue.Arn
         maxReceiveCount: 2
+      VisibilityTimeout: 60
 
   FeedbackDLQQueue:
     Type: AWS::SQS::Queue
@@ -137,13 +140,6 @@ Resources:
       Protocol: sqs
       TopicArn: !Ref FeedbackNotifications
       Endpoint: !GetAtt FeedbackQueue.Arn
-
-  FeedbackAdminEmailNotificationSubscription:
-    Type: AWS::SNS::Subscription
-    Properties:
-      Protocol: email
-      TopicArn: !Ref FeedbackNotifications
-      Endpoint: hi@macandersonuche.dev
 
   SNSToSQSPolicy:
     Type: AWS::SQS::QueuePolicy
@@ -161,10 +157,94 @@ Resources:
       Queues:
         - !Ref FeedbackQueue
 
+  # Define the publisher Lambda function with permissions
+  PublishToEventFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      FunctionName: publisheventfunction
+      Handler: dist/publishevent/app.lambdaHandler
+      Runtime: nodejs16.x
+      Description: A Lambda function that forward changes on DynamoDB table to EventBridge bus.
+      MemorySize: 128
+      Timeout: 3
+      Events:
+        TableRecordChange:
+          Type: DynamoDB
+          Properties:
+            StartingPosition: LATEST
+            Stream: !GetAtt FeedbackEventsTable.StreamArn
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !GetAtt FeedbackEventBus.Arn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Resource: "*"
+              Action:
+                - events:PutEvents
+
+  #Define the Lambda subscribers for updates from table
+  SubscribeInsertFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: subscribeeventfunction
+      Handler: dist/subscribe/app.lambdaHandler
+      Runtime: nodejs16.x
+      Description: A Lambda function that receive update events from the table.
+
+  #EventBridge specification
+  FeedbackEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: FeedbackEventBus
+
+  #EventBridge rules and permissions
+  FeedbackEventRuleInsert:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "update transactions"
+      EventBusName: !GetAtt FeedbackEventBus.Arn
+      EventPattern:
+        source:
+          - "FeedbackEventsTable"
+        detail-type:
+          - transaction
+        detail:
+          eventName:
+            - "INSERT"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt SubscribeInsertFunction.Arn
+          Id: "eventRuleInsert"
+  PermissionForInsertEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SubscribeInsertFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt FeedbackEventRuleInsert.Arn
+
   FeedbackTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "submit-feedback"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      DeletionProtectionEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  FeedbackEventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "submit-feedback-events"
       AttributeDefinitions:
         - AttributeName: "id"
           AttributeType: "S"
@@ -192,9 +272,6 @@ Resources:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: "true"
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldApi:
     Description: "API Gateway endpoint URL for dev for real time feedback"
     Value: !Sub "https://${FeedbackApi}.execute-api.${AWS::Region}.amazonaws.com/dev/"
